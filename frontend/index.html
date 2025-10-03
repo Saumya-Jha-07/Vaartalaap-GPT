@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>vartalaap GPT</title>
+  
+  <link href="../src/output.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-[#343541] text-gray-100">
+  <div class="flex flex-col h-screen">
+
+    <header class="bg-[#202123] border-b border-gray-700 px-4 py-3">
+      <h1 class="text-lg font-semibold text-gray-200 text-center">Vartalaap GPT</h1>
+    </header>
+
+    
+    <div id="messages" class="flex-1 overflow-y-auto px-4 py-6">
+      <div class="mx-auto max-w-3xl space-y-6" id="messageContainer">
+        <div class="flex justify-start">
+          <div class="max-w-[80%] rounded-lg px-4 py-3 bg-[#444654] text-gray-100">
+            <p class="text-sm">Aur bhai , kya puchna hai puch ?</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#202123] border-t border-gray-700 px-4 py-4">
+      <div class="mx-auto max-w-3xl flex gap-2">
+        <input
+          id="messageInput"
+          placeholder="Type your message..."
+          class="flex-1 min-h-[60px] resize-none rounded-lg bg-[#40414f] text-gray-100 border border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400"
+        ></input>
+        <button
+          id="sendButton"
+          class="h-[60px] w-[60px] rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 flex items-center justify-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m5 12 7-7 7 7"/>
+            <path d="M12 19V5"/>
+          </svg>
+        </button>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
