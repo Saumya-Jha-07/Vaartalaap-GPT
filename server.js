@@ -1,22 +1,18 @@
-import "dotenv/config"
-import Groq from 'groq-sdk'
-import { tavily } from "@tavily/core"
+import express from "express";
 
-const groq = new Groq({apiKey : process.env.GROQ_API_KEY})
-// const tvly = new tavily({apiKey : process.env.TAVILY_API_KEY})
+const app = express();
+app.use(express.json());  // middle-ware for json data 
+const port = 3000;
 
-async function llm(userQuery) {
-    const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    messages: [
-      {
-        role: "user",
-        content: userQuery,
-      },
-    ],
-  });
-  return completion.choices[0]?.message?.content;
-};
+app.get("/", (req, res) => {
+  res.send("Server se hello !");
+});
 
+app.post("/chat" , (req,res) => {
+    const {message} = req.body; 
+    res.json({'message' : message})
+})
 
-module.exports = {llm}
+app.listen(port, () => {
+  console.log(`Server is running at port : ${port}`);
+});

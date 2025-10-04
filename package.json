@@ -4,17 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1" ,
-    "css" : "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css": "npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-
   "dependencies": {
     "@tailwindcss/cli": "^4.1.14",
     "@tavily/core": "^0.5.12",
     "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "groq-sdk": "^0.33.0",
     "tailwindcss": "^4.1.14"
   }
