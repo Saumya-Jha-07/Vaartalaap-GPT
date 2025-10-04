@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+
   "dependencies": {
     "@tailwindcss/cli": "^4.1.14",
     "@tavily/core": "^0.5.12",
