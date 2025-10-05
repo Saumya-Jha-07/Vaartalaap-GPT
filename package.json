@@ -9,6 +9,7 @@
   },
   "keywords": [],
   "author": "",
+  "type": "module",
   "license": "ISC",
   "dependencies": {
     "@tailwindcss/cli": "^4.1.14",

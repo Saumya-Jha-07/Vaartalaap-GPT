@@ -1,86 +1,136 @@
-import "dotenv/config"
-import Groq from "groq-sdk"
-import { tavily } from "@tavily/core"
+import "dotenv/config";
+import { tavily } from "@tavily/core";
+import Groq from "groq-sdk";
 
-const tvly = new tavily({apiKey : process.env.TAVILY_API_KEY})
-const groq = new Groq({apiKey : process.env.GROQ_API_KEY})
+const model = "openai/gpt-oss-120b";
 
-function webSearch(demo){
-    return `hello ${demo}`
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const tvly = new tavily({ apiKey: process.env.TAVILY_API_KEY });
+
+async function webSearch({ query }) {
+  console.log("web search called....");
+  const response = await tvly.search(query);
+  const textRes = response.results.map((res) => res.content).join("\n\n");
+  return textRes;
 }
 
-async function llm_call(userMessage) {
-    const messages = [
-        {
-            role : "system" ,
-            content : `You are a very helpful personal assistant who answers the question asked by the user.
-            Answer the question in polite way with as much as required only .
-            In case you don't have the answer you have  access to certain tools such as :- 
-            1. webSearch() // this tool is when you need to search the web / internet
-            `
-        } ,
-        {
-            role : "user" ,
-            content : userMessage
-        }
-    ]
+const userQuery = "What is the weather in Mumbai ?"
 
-    const tools = [
+export async function llm_call(userQuery) {
+  
+  const messages = [
     {
-      "type": "function",
-      "function": {
-        "name": "webSearch",
-        "description": "Search the internet and get the latest information from the web",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "query": {
-              "type": "string",
-              "description": "The user query that needs to be answered"
-            },
+      role: "system",
+      content: `You are a helpful assistant who answers the asked questions in a single line .
+        Be concise and relevant. 
+        Call the tools as needed according to the job .
+        Some tools you have the access to is :- 
+          1. webSearch() // for searching the internet/web`,
+    },
+    {
+      role: "user",
+      content: userQuery,
+    },
+  ];
 
-          },
-          "required": ["query"]
-        }
-      }
-    }
-    ]
+  const res = await groq.chat.completions.create({
+    model: model,
+    messages: [
+      {
+        role: "system",
+        content: `You are a helpful assistant , whose job is to tell if you can answer the question asked by yourself or do you need an external tool . Give one word answer ,return yes if you need one tool or no otherwise ONLY`,
+      },
+      {
+        role: "user",
+        content: userQuery,
+      },
+    ],
+    temperature: 0,
+  });
 
-    const res = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+  const toolRequired = res.choices[0].message.content.toLowerCase();
+
+  // user queries to llm and llm returns
+  if (toolRequired == "no") {
+    const ans = await groq.chat.completions.create({
+      model: model,
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful assistant. Answer the questions consisely and be relevant.`,
+        },
+        {
+          role: "user",
+          content: userQuery,
+        },
+      ],
+    });
+    console.log(ans.choices[0].message.content);
+    return;
+  }
+
+  while (true) {
+    const res2 = await groq.chat.completions.create({
+      model: model,
       messages: messages,
-      tools: tools,
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "webSearch",
+            description:
+              "Search the real time latest information available on the internet",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "The search query to perform web search on",
+                },
+              },
+              required: ["query"],
+            },
+          },
+        },
+      ],
       tool_choice: "auto",
     });
 
-    const msg = res.choices[0].message
-    messages.push(msg)
+    const message = res2.choices[0].message;
+    messages.push(message); // for maintaining the chat history (ye llm ka tool call wala msg hai)
 
-    // tool call needed
-    if(msg.tool_calls){
-        console.log("Structured tool call : " , msg)
-    } 
-    
-    //  tool call needed but llm string response de rha hai
-    else if(msg.content.includes("<function=")){
-        console.log("llm chutiya hai : ",msg)
-        // remove all the un-necassary things
-        let newMsg = msg.content.replace("<function=","");
-        newMsg = newMsg.replace("</function>","");
-        newMsg = newMsg.replace(" ","");
+    const toolCalls = message.tool_calls;
 
-        const firstBrace = newMsg.indexOf("{");
-        const fnName = newMsg.slice(0,firstBrace);
-        const args = newMsg.slice(firstBrace);
-        args = JSON.parse(args)
-
-        
-    } 
-    
-    // tool call not needed 
-    else {
-        return msg.content
+    // extra check isliye lagana pda kyuki llm kai baar structured way m ouput ni deta
+    if (!toolCalls) {
+      if (message.content[0] != "<") {
+        console.log(`Assistant : ${message.content}`);
+      } else {
+        console.log("LLM structured ni de rha hai kch krna pdega iska ");
+      }
+      break;
     }
+
+    for (const tool of toolCalls) {
+      const functionName = tool.function.name;
+      const args = JSON.parse(tool.function.arguments);
+
+      if (functionName === "webSearch") {
+        // tool returns the response
+        const toolResult = await webSearch(args);
+
+        // object bnega and push krenge chat history ke liye
+        const msg = {
+          tool_call_id: tool.id,
+          role: "tool",
+          name: functionName,
+          content: toolResult,
+        };
+        messages.push(msg);
+      }
+    }
+  }
 }
 
-llm_call("Weather of Mumbai ?")
+
+llm_call(userQuery)
