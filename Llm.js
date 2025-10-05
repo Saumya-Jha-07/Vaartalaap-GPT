@@ -14,15 +14,14 @@ async function webSearch({ query }) {
   return textRes;
 }
 
-const userQuery = "What is the weather in Mumbai ?"
+const userQuery = "hi ?"
 
 export async function llm_call(userQuery) {
   
   const messages = [
     {
       role: "system",
-      content: `You are a helpful assistant who answers the asked questions in a single line .
-        Be concise and relevant. 
+      content: `You are a helpful assistant who answers the asked questions in to the point , concise manner , covering all the topics that are asked , not more than that and also not less than that.
         Call the tools as needed according to the job .
         Some tools you have the access to is :- 
           1. webSearch() // for searching the internet/web`,
@@ -65,8 +64,7 @@ export async function llm_call(userQuery) {
         },
       ],
     });
-    console.log(ans.choices[0].message.content);
-    return;
+    return ans.choices[0].message.content;
   }
 
   while (true) {
@@ -104,11 +102,11 @@ export async function llm_call(userQuery) {
     // extra check isliye lagana pda kyuki llm kai baar structured way m ouput ni deta
     if (!toolCalls) {
       if (message.content[0] != "<") {
-        console.log(`Assistant : ${message.content}`);
-      } else {
-        console.log("LLM structured ni de rha hai kch krna pdega iska ");
+        return message.content;
+      } 
+      else {
+        return "LLm responded wrongly ! Please try again."
       }
-      break;
     }
 
     for (const tool of toolCalls) {

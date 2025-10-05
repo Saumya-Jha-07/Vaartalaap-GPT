@@ -1,24 +1,36 @@
 
 const msgInput = document.getElementById("messageInput");
-const messages = []
 
 
 
 
-async function llm_call(messages){
-  
+async function callServer(userMsg){
+    const response = await fetch('http://localhost:3000' , {
+      method : "POST" , 
+      headers : {
+        'content-type' : 'application/json'
+      },
+      body : JSON.stringify({message : userMsg})
+    })
+
+    if(!response.ok){
+      throw new Error("Error generating the response!")
+    }
+
+    const result = await response.json();
+    return result.message;
 }
 
 
-function addToUI(){
+function addToUI(role , text){
   let msgContainer = document.getElementById("messageContainer");
   let newDiv = document.createElement("div");
   if (msgInput.value == "") return;
-  newDiv.innerHTML = `<div class="flex ${message.role == "user" ? "justify-end" : "justify-start"}">
+  newDiv.innerHTML = `<div class="flex ${role == "user" ? "justify-end" : "justify-start"}">
           <div class="max-w-[80%] rounded-lg px-4 py-3 ${
-            message.role == "user" ? `bg-[#444654]` : ""
+            role == "user" ? `bg-[#444654]` : ""
           } text-gray-100">
-            <p class="text-[16px">${msgInput.value}</p>
+            <p class="text-[16px">${text}</p>
           </div>
         </div>`;
   msgContainer.appendChild(newDiv);
@@ -26,15 +38,17 @@ function addToUI(){
 }
 
 
-msgInput.addEventListener("keyup",(event) => {
+msgInput.addEventListener("keyup",async (event) => {
     if(event.key === "Enter"){
-      addToUI()
-      llm_call()
+      addToUI("user", msgInput.value);
+      const llm_res = await callServer(msgInput.value);
+      addToUI("assisstant" , llm_res)
     }
 })
 
 const sendBtn = document.getElementById("sendButton")
-sendBtn.addEventListener("click" , () => {
-  addToUI()
-  llm_call()
+sendBtn.addEventListener("click" , async () => {
+  addToUI("user", msgInput.value);
+  const llm_res = await callServer(msgInput.value);
+  addToUI("assisstant" , llm_res);
 })

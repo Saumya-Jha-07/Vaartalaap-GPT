@@ -15,6 +15,7 @@ app.post("/chat" , async (req,res) => {
   res.json({
     "message" : result
   })
+  
 })
 
 app.listen(port, () => {
