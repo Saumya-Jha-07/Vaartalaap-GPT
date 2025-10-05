@@ -21,7 +21,9 @@ export async function llm_call(userQuery) {
   const messages = [
     {
       role: "system",
-      content: `You are a helpful assistant who answers the asked questions in to the point , concise manner , covering all the topics that are asked , not more than that and also not less than that.
+      content: `You are a helpful assistant who answers the asked questions in to the point . 
+      Be concise and relevant .
+      No fancy things , just text in a line.
         Call the tools as needed according to the job .
         Some tools you have the access to is :- 
           1. webSearch() // for searching the internet/web`,

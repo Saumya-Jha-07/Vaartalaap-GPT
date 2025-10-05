@@ -1,11 +1,8 @@
 
 const msgInput = document.getElementById("messageInput");
 
-
-
-
 async function callServer(userMsg){
-    const response = await fetch('http://localhost:3000' , {
+    const response = await fetch('http://localhost:3000/chat' , {
       method : "POST" , 
       headers : {
         'content-type' : 'application/json'
@@ -18,14 +15,15 @@ async function callServer(userMsg){
     }
 
     const result = await response.json();
+    console.log(`user : ${userMsg} \n bot : ${result.message}`)
+    
     return result.message;
 }
 
-
-function addToUI(role , text){
+function addToUI(text,role){  
   let msgContainer = document.getElementById("messageContainer");
   let newDiv = document.createElement("div");
-  if (msgInput.value == "") return;
+  if (text == "") return;
   newDiv.innerHTML = `<div class="flex ${role == "user" ? "justify-end" : "justify-start"}">
           <div class="max-w-[80%] rounded-lg px-4 py-3 ${
             role == "user" ? `bg-[#444654]` : ""
@@ -40,15 +38,17 @@ function addToUI(role , text){
 
 msgInput.addEventListener("keyup",async (event) => {
     if(event.key === "Enter"){
-      addToUI("user", msgInput.value);
-      const llm_res = await callServer(msgInput.value);
-      addToUI("assisstant" , llm_res)
+      let input = msgInput.value;
+      addToUI(input, "user");
+      const llm_res = await callServer(input);
+      addToUI(llm_res,"assistant");
     }
-})
-
-const sendBtn = document.getElementById("sendButton")
-sendBtn.addEventListener("click" , async () => {
-  addToUI("user", msgInput.value);
-  const llm_res = await callServer(msgInput.value);
-  addToUI("assisstant" , llm_res);
+  })
+  
+  const sendBtn = document.getElementById("sendButton")
+  sendBtn.addEventListener("click" , async () => {
+  let input = msgInput.value;
+  addToUI(input,"user");
+  const llm_res = await callServer(input);
+  addToUI(llm_res,"demo");
 })

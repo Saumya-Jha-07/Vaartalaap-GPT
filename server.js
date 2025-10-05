@@ -1,8 +1,10 @@
 import express from "express";
+import cors from 'cors'
 import { llm_call } from "./Llm.js";
 
 const app = express();
 app.use(express.json());  // middle-ware for json data 
+app.use(cors());
 const port = 3000;
 
 app.get("/", (req, res) => {
