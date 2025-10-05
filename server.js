@@ -14,8 +14,10 @@ app.get("/", (req, res) => {
 app.post("/chat" , async (req,res) => {
   const {message} = req.body;
   const result = await llm_call(message);
+  let finalRes = result.replaceAll("*" , "");
+  finalRes = finalRes.replaceAll("|","\n");
   res.json({
-    "message" : result
+    "message" : finalRes
   })
   
 })
