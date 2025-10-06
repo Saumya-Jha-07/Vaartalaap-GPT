@@ -97,7 +97,17 @@ export async function llm_call(userQuery,threadId) {
     return ans.choices[0].message.content;
   }
 
+  const MAX_RETRIES = 5;
+  let count = 0;
+
   while (true) {
+
+    if(count<MAX_RETRIES){
+      return "I couldnot find the result , please try  again later !"
+    }
+
+    count++;
+
     const res2 = await groq.chat.completions.create({
       model: model,
       messages: messages,
