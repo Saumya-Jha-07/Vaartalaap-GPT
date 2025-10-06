@@ -1,3 +1,4 @@
+const threadId = Date.now().toString(36) + Math.random.toString(36)
 
 const msgInput = document.getElementById("messageInput");
 
@@ -15,7 +16,7 @@ async function callServer(userMsg){
       headers : {
         'content-type' : 'application/json'
       },
-      body : JSON.stringify({message : userMsg})
+      body : JSON.stringify({message : userMsg , threadId : threadId})
     })
 
     if(!response.ok){
@@ -59,8 +60,7 @@ msgInput.addEventListener("keyup",async (event) => {
     }
   })
   
-  const sendBtn = docum
-  ent.getElementById("sendButton")
+  const sendBtn = document.getElementById("sendButton")
   sendBtn.addEventListener("click" , async () => {
     let input = msgInput.value;
     if(!input) return ;

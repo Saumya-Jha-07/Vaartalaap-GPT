@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { tavily } from "@tavily/core";
 import Groq from "groq-sdk";
+import NodeCache from "node-cache";
 
 const model = "openai/gpt-oss-120b";
-
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const tvly = new tavily({ apiKey: process.env.TAVILY_API_KEY });
+const cache = new NodeCache({stdTTL : 60 * 60}) // 1 hr ke liye store hoga then delete
 
 async function webSearch({ query }) {
   console.log("web search called....");
@@ -14,11 +15,10 @@ async function webSearch({ query }) {
   return textRes;
 }
 
-const userQuery = "hi ?"
 
-export async function llm_call(userQuery) {
+export async function llm_call(userQuery,threadId) {
   
-  const messages = [
+  const baseMessage = [
     {
       role: "system",
       content: `You are a smart personal assistant.
@@ -48,12 +48,15 @@ export async function llm_call(userQuery) {
           current date and time: ${new Date().toUTCString()},
 
 `,
-    },
-    {
-      role: "user",
-      content: userQuery,
-    },
+    }
   ];
+
+  const messages = cache.get(threadId) ?? baseMessage ;  // ya to phle se kch hoga wo de do , if not basemessage kyuki start hua hoga abhi convo
+
+  messages.push({
+    role: "user",
+    content: userQuery,
+  });
 
   const res = await groq.chat.completions.create({
     model: model,
@@ -69,6 +72,7 @@ export async function llm_call(userQuery) {
     ],
     temperature: 0,
   });
+  messages.push(res.choices[0].message);
 
   const toolRequired = res.choices[0].message.content.toLowerCase();
 
@@ -87,6 +91,9 @@ export async function llm_call(userQuery) {
         },
       ],
     });
+    messages.push(ans.choices[0].message);
+    cache.set(threadId,messages);  // cache
+    console.log(cache)
     return ans.choices[0].message.content;
   }
 
@@ -154,4 +161,3 @@ export async function llm_call(userQuery) {
 }
 
 
-llm_call(userQuery)
